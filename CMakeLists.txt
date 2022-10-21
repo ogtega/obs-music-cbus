@@ -18,7 +18,8 @@ set(LINUX_MAINTAINER_EMAIL "ogtega@users.noreply.github.com")
 
 # Add your custom source files here - header files are optional and only required for visibility
 # e.g. in Xcode or Visual Studio
-target_sources(${CMAKE_PROJECT_NAME} PRIVATE ./**.cpp ./**.c)
+FILE(GLOB_RECURSE SRC ${PROJECT_SOURCE_DIR}/src *.c *.cpp)
+target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${SRC})
 
 # Import libobs as main plugin dependency
 find_package(libobs REQUIRED)
