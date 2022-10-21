@@ -81,6 +81,6 @@
             "qtVersion": 6
         }
     },
-    "name": "obs-music-bus",
+    "name": "music_bus",
     "version": "0.1.0"
 }
