@@ -22,10 +22,10 @@
 		"--userns=keep-id",
 		"--privileged",
 		"--net=host",
-		"-v=${localEnv:HOME}/.ssh:/vscode/.ssh"
+		"-v=${localEnv:HOME}/.ssh:/home/vscode/.ssh"
 	],
-	"workspaceMount": "source=${localWorkspaceFolder},target=/vscode/workspace,type=bind,consistency=cached",
-	"workspaceFolder": "/vscode/workspace",
+	"workspaceMount": "source=${localWorkspaceFolder},target=/home/vscode/workspace,type=bind,consistency=cached",
+	"workspaceFolder": "/home/vscode/workspace",
 	"features": {
 		"git": "os-provided"
 	}
