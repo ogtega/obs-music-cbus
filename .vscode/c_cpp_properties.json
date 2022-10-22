@@ -4,14 +4,13 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "~/obs-build-dependencies/plugin-deps-2022-08-02-qt6-x86_64/include/**"
+                "../obs-build-dependencies/**"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/clang",
             "cStandard": "c17",
             "cppStandard": "c++14",
-            "intelliSenseMode": "linux-clang-x64",
-            "configurationProvider": "ms-vscode.cmake-tools"
+            "intelliSenseMode": "linux-clang-x64"
         }
     ],
     "version": 4

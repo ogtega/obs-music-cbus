@@ -15,5 +15,4 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     libgles2-mesa-dev \
     libwayland-dev \
     libpulse-dev \
-    qt6-base-dev libqt6svg6-dev qt6-base-private-dev \
-    dotnet6
+    qt6-base-dev libqt6svg6-dev qt6-base-private-dev
