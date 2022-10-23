@@ -2,13 +2,11 @@
 #include "../util/dbus.h"
 
 struct overplay {
-	obs_source_t *source;
+	obs_source_t *src;
 	uint32_t cx;
 	uint32_t cy;
 	obs_source_t *textSource;
-	float update_time_elapsed;
 	struct metadata *data;
-	pthread_t thread;
   bool showArt;
 	volatile bool updateThread;
 };
