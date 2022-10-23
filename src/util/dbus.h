@@ -1,6 +1,6 @@
 #include <obs-module.h>
 
-struct media_metadata {
+struct metadata {
 	char* artist;
   char* title;
   char* album;

@@ -17,7 +17,6 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 */
 
 #include <obs-module.h>
-#include "util/metadata.h"
 #include "source/overplay.h"
 #include "plugin-macros.generated.h"
 
