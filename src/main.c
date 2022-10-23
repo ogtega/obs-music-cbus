@@ -1,6 +1,6 @@
 /*
-Plugin Name
-Copyright (C) <Year> <Developer> <Email Address>
+musicbus
+Copyright (C) 2022 Teslim Olunlade <Email Address>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -17,7 +17,8 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 */
 
 #include <obs-module.h>
-
+#include "util/metadata.h"
+#include "source/overplay.h"
 #include "plugin-macros.generated.h"
 
 OBS_DECLARE_MODULE()
@@ -27,6 +28,7 @@ bool obs_module_load(void)
 {
 	blog(LOG_INFO, "plugin loaded successfully (version %s)",
 	     PLUGIN_VERSION);
+	register_overlay();
 	return true;
 }
 

@@ -15,7 +15,7 @@ on:
       - main
 
 env:
-  PLUGIN_NAME: 'musicbus'
+  PLUGIN_NAME: 'overplay'
 
 jobs:
   clang_check:
