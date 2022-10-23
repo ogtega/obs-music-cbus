@@ -1,5 +1,5 @@
 /*
-musicbus
+overplay
 Copyright (C) 2022 Teslim Olunlade <Email Address>
 
 This program is free software; you can redistribute it and/or modify
@@ -19,6 +19,7 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include <obs-module.h>
 #include "source/overplay.h"
 #include "plugin-macros.generated.h"
+#include <dbus/dbus.h>
 
 OBS_DECLARE_MODULE()
 OBS_MODULE_USE_DEFAULT_LOCALE(PLUGIN_NAME, "en-US")
