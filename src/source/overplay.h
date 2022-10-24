@@ -1,3 +1,5 @@
+#include <glib.h>
+#include <gio/gio.h>
 #include <pthread.h>
 #include <dbus/dbus.h>
 #include <obs-module.h>
@@ -10,7 +12,7 @@ struct overplay {
 	struct metadata *data;
 	bool showArt;
 	pthread_t thread;
-	DBusConnection *bus;
+	GDBusConnection *bus;
 	volatile bool updateThread;
 };
 

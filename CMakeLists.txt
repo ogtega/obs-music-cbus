@@ -82,10 +82,13 @@ elseif(OS_MACOS)
 
   # --- Linux-specific build settings and tasks ---
 else()
+  include(cmake/FindGLIB.cmake)
   include(cmake/FindDBus.cmake)
   # Use results of find_package() call.
   include_directories(${DBUS_INCLUDE_DIRS})
   target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE ${DBUS_LIBRARIES})
+  include_directories(${GLIB_INCLUDE_DIRS})
+  target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE ${GLIB_LIBRARIES} ${GLIB_GIO_LIBRARIES})
 
   target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE -Wall)
 endif()

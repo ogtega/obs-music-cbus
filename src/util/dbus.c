@@ -1,17 +1,20 @@
 #include "dbus.h"
 #include <unistd.h>
 
-DBusConnection *bus_get()
+GDBusConnection *bus_get()
 {
-	DBusConnection *conn = NULL;
-	DBusError err;
+	GDBusConnection *conn = NULL;
+	GDBusError err;
+	char *err_msg = NULL;
 	dbus_error_init(&err);
 
-	conn = dbus_bus_get(DBUS_BUS_SESSION, &err);
+	conn = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, &err);
 
-	if (dbus_error_is_set(&err)) {
-		blog(LOG_ERROR, "Connection Error (%s)", err.message);
-		dbus_error_free(&err);
+	if (err) {
+		err_msg = g_dbus_error_encode_gerror(err);
+		blog(LOG_ERROR, "Connection Error (%s)", err_msg);
+		g_error_free(&err);
+		free(err_msg);
 	}
 
 	if (NULL == conn) {
@@ -21,9 +24,9 @@ DBusConnection *bus_get()
 	return conn;
 }
 
-struct metadata *bus_read_msg(DBusConnection *conn)
+struct metadata *bus_read_msg(GDBusConnection *conn)
 {
-	char *data = NULL;
+	char *iface = NULL;
 	DBusMessageIter args;
 
 	while (1) {
@@ -41,16 +44,15 @@ struct metadata *bus_read_msg(DBusConnection *conn)
 					   "org.freedesktop.DBus.Properties",
 					   "PropertiesChanged")) {
 			// read the parameters
-			if (!dbus_message_iter_init(msg, &args))
+			if (!dbus_message_iter_init(msg, &args)) {
 				blog(LOG_WARNING, "Message has no arguments!");
-			else if (DBUS_TYPE_STRING !=
-				 dbus_message_iter_get_arg_type(&args))
-				blog(LOG_WARNING, "Argument is not string!");
-			else {
-				dbus_message_iter_get_basic(&args, &data);
-				blog(LOG_INFO, "Got Signal with value %s",
-				     data);
+				continue;
 			}
+
+			dbus_message_iter_get_basic(&args, &iface);
+			blog(LOG_INFO, "%s", iface);
+
+			dbus_message_iter_next(&args);
 		}
 
 		dbus_message_unref(msg);
@@ -59,9 +61,9 @@ struct metadata *bus_read_msg(DBusConnection *conn)
 	return NULL;
 }
 
-void bus_add_match(DBusConnection *conn)
+void bus_add_match(GDBusConnection *conn)
 {
-	DBusError err;
+	GDBusError err;
 	dbus_error_init(&err);
 
 	dbus_bus_add_match(
@@ -71,7 +73,7 @@ void bus_add_match(DBusConnection *conn)
 	dbus_connection_flush(conn);
 
 	if (dbus_error_is_set(&err)) {
-		blog(LOG_ERROR, "Match Error (%s)", err.message);
+		blog(LOG_ERROR, "Match Error (%s)", err);
 		dbus_error_free(&err);
 	}
 }

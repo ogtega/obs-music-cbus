@@ -1,5 +1,7 @@
 #include <obs-module.h>
 #include <dbus/dbus.h>
+#include <glib.h>
+#include <gio/gio.h>
 
 struct metadata {
 	char *artist;
@@ -8,6 +10,6 @@ struct metadata {
 	char *artUrl;
 };
 
-extern DBusConnection *bus_get();
-extern void bus_add_match(DBusConnection *conn);
-extern struct metadata *bus_read_msg(DBusConnection *conn);
+extern GDBusConnection *bus_get();
+extern void bus_add_match(GDBusConnection *conn);
+extern struct metadata *bus_read_msg(GDBusConnection *conn);
