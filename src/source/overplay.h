@@ -1,5 +1,6 @@
+#include <pthread.h>
+#include <dbus/dbus.h>
 #include <obs-module.h>
-#include "../util/dbus.h"
 
 struct overplay {
 	obs_source_t *src;
@@ -7,7 +8,9 @@ struct overplay {
 	uint32_t cy;
 	obs_source_t *textSource;
 	struct metadata *data;
-  bool showArt;
+	bool showArt;
+	pthread_t thread;
+	DBusConnection *bus;
 	volatile bool updateThread;
 };
 

@@ -1,6 +1,6 @@
 #include "overplay.h"
-#include <obs-module.h>
 #include "../util/constants.h"
+#include "../util/dbus.h"
 
 static void *overplay_create(obs_data_t *settings, obs_source_t *source)
 {
@@ -10,8 +10,39 @@ static void *overplay_create(obs_data_t *settings, obs_source_t *source)
 	const char *text_source_id = "text_ft2_source\0";
 	widget->textSource = obs_source_create_private(
 		text_source_id, text_source_id, settings);
+	widget->bus = bus_get();
 	obs_source_add_active_child(widget->src, widget->textSource);
 	return widget;
+}
+
+void *poll_music_bus(void *w)
+{
+	struct overplay *widget = w;
+
+	while (widget->updateThread) {
+		bus_read_msg(widget->bus);
+	}
+
+	return NULL;
+}
+
+static void start_thread(struct overplay *widget)
+{
+	widget->updateThread = true;
+	bus_add_match(widget->bus);
+
+	if (pthread_create(&widget->thread, NULL, poll_music_bus, widget)) {
+		blog(LOG_WARNING,
+		     "Failed to create thread for reading serial data.");
+	}
+}
+
+static void stop_thread(struct overplay *widget)
+{
+	widget->updateThread = false;
+	if (pthread_join(widget->thread, NULL)) {
+		blog(LOG_WARNING, "Failed to join serial thread.");
+	}
 }
 
 static void overplay_destroy(void *data)
@@ -45,6 +76,12 @@ static void overplay_render(void *data, gs_effect_t *effect)
 	UNUSED_PARAMETER(effect);
 	struct overplay *widget = data;
 	obs_source_video_render(widget->textSource);
+}
+
+static void overplay_show(void *data)
+{
+	struct overplay *widget = data;
+	start_thread(widget);
 }
 
 static bool hide_art_changed(obs_properties_t *props, obs_property_t *property,
@@ -104,7 +141,8 @@ void register_overlay()
 					    .get_height = get_height,
 					    .get_defaults = get_defaults,
 					    .video_render = overplay_render,
-					    .video_tick = overplay_video_tick};
+					    .video_tick = overplay_video_tick,
+					    .show = overplay_show};
 
 	obs_register_source(&si);
 }

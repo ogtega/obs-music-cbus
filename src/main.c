@@ -19,14 +19,14 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include <obs-module.h>
 #include "source/overplay.h"
 #include "plugin-macros.generated.h"
-#include <dbus/dbus.h>
+#include "util/dbus.h"
 
 OBS_DECLARE_MODULE()
 OBS_MODULE_USE_DEFAULT_LOCALE(PLUGIN_NAME, "en-US")
 
 bool obs_module_load(void)
 {
-	blog(LOG_INFO, "plugin loaded successfully (version %s)",
+	blog(LOG_INFO, "Plugin loaded successfully (version %s)",
 	     PLUGIN_VERSION);
 	register_overlay();
 	return true;
@@ -34,5 +34,5 @@ bool obs_module_load(void)
 
 void obs_module_unload()
 {
-	blog(LOG_INFO, "plugin unloaded");
+	blog(LOG_INFO, "Plugin unloaded");
 }
