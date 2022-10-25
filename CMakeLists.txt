@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.16...3.21)
 # Change obs-plugintemplate to your plugin's name in a machine-readable format (e.g.:
 # obs-myawesomeplugin) and set
 project(overplay VERSION 0.1.0)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_library(${CMAKE_PROJECT_NAME} MODULE)
 
 # Replace `Your Name Here` with the name (yours or your organization's) you want to see as the
