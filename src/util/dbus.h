@@ -11,5 +11,5 @@ struct metadata {
 };
 
 extern GDBusConnection *bus_get();
-extern void bus_add_match(GDBusConnection *conn);
-extern struct metadata *bus_read_msg(GDBusConnection *conn);
+extern guint bus_subscribe(GDBusConnection *conn, struct metadata *data);
+extern void bus_unsubscribe(GDBusConnection *conn, guint id);

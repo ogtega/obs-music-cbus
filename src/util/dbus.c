@@ -4,16 +4,15 @@
 GDBusConnection *bus_get()
 {
 	GDBusConnection *conn = NULL;
-	GDBusError err;
+	GError *err = NULL;
 	char *err_msg = NULL;
-	dbus_error_init(&err);
 
 	conn = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, &err);
 
 	if (err) {
 		err_msg = g_dbus_error_encode_gerror(err);
 		blog(LOG_ERROR, "Connection Error (%s)", err_msg);
-		g_error_free(&err);
+		g_error_free(err);
 		free(err_msg);
 	}
 
@@ -24,56 +23,30 @@ GDBusConnection *bus_get()
 	return conn;
 }
 
-struct metadata *bus_read_msg(GDBusConnection *conn)
+void signal_cb(GDBusConnection *conn, const gchar *sender_name,
+	       const gchar *object_path, const gchar *interface_name,
+	       const gchar *signal_name, GVariant *parameters, gpointer data)
 {
-	char *iface = NULL;
-	DBusMessageIter args;
+	UNUSED_PARAMETER(conn);
+	UNUSED_PARAMETER(sender_name);
+	UNUSED_PARAMETER(object_path);
+	UNUSED_PARAMETER(interface_name);
+	UNUSED_PARAMETER(parameters);
+	UNUSED_PARAMETER(data);
 
-	while (1) {
-		dbus_connection_read_write(conn, 0);
-		DBusMessage *msg = dbus_connection_pop_message(conn);
-
-		// loop again if we haven't read a message
-		if (NULL == msg) {
-			sleep(1);
-			continue;
-		}
-
-		// check if the message is a signal from the correct interface and with the correct name
-		if (dbus_message_is_signal(msg,
-					   "org.freedesktop.DBus.Properties",
-					   "PropertiesChanged")) {
-			// read the parameters
-			if (!dbus_message_iter_init(msg, &args)) {
-				blog(LOG_WARNING, "Message has no arguments!");
-				continue;
-			}
-
-			dbus_message_iter_get_basic(&args, &iface);
-			blog(LOG_INFO, "%s", iface);
-
-			dbus_message_iter_next(&args);
-		}
-
-		dbus_message_unref(msg);
-	}
-
-	return NULL;
+	// struct metadata *meta = data;
+	blog(LOG_INFO, "%s", signal_name);
 }
 
-void bus_add_match(GDBusConnection *conn)
+guint bus_subscribe(GDBusConnection *conn, struct metadata *data)
 {
-	GDBusError err;
-	dbus_error_init(&err);
+	return g_dbus_connection_signal_subscribe(
+		conn, NULL, "org.freedesktop.DBus.Properties",
+		"PropertiesChanged", "/org/mpris/MediaPlayer2", NULL,
+		G_DBUS_SIGNAL_FLAGS_NONE, signal_cb, data, NULL);
+}
 
-	dbus_bus_add_match(
-		conn,
-		"type='signal', path='/org/mpris/MediaPlayer2', member='PropertiesChanged', interface='org.freedesktop.DBus.Properties'",
-		&err);
-	dbus_connection_flush(conn);
-
-	if (dbus_error_is_set(&err)) {
-		blog(LOG_ERROR, "Match Error (%s)", err);
-		dbus_error_free(&err);
-	}
+void bus_unsubscribe(GDBusConnection *conn, guint id)
+{
+	g_dbus_connection_signal_unsubscribe(conn, id);
 }

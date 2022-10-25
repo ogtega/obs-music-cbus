@@ -15,39 +15,21 @@ static void *overplay_create(obs_data_t *settings, obs_source_t *source)
 	return widget;
 }
 
-void *poll_music_bus(void *w)
-{
-	struct overplay *widget = w;
-
-	while (widget->updateThread) {
-		bus_read_msg(widget->bus);
-	}
-
-	return NULL;
-}
-
 static void start_thread(struct overplay *widget)
 {
-	widget->updateThread = true;
-	bus_add_match(widget->bus);
-
-	if (pthread_create(&widget->thread, NULL, poll_music_bus, widget)) {
-		blog(LOG_WARNING,
-		     "Failed to create thread for reading serial data.");
-	}
+	widget->sub_id = bus_subscribe(widget->bus, widget->data);
 }
 
 static void stop_thread(struct overplay *widget)
 {
-	widget->updateThread = false;
-	if (pthread_join(widget->thread, NULL)) {
-		blog(LOG_WARNING, "Failed to join serial thread.");
-	}
+	bus_unsubscribe(widget->bus, widget->sub_id);
 }
 
 static void overplay_destroy(void *data)
 {
 	struct overplay *widget = data;
+
+	stop_thread(widget);
 
 	bfree(widget->data);
 	widget->data = NULL;
