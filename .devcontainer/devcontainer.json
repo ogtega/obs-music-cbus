@@ -28,5 +28,26 @@
 	"workspaceFolder": "/home/vscode/workspace",
 	"features": {
 		"git": "os-provided"
+	},
+	"customizations": {
+		"vscode": {
+			"settings": {
+				"clangd.arguments": [
+					"--background-index",
+					"--compile-commands-dir=${workspaceFolder}/build_x86_64/"
+				],
+				"clangd.onConfigChanged": "restart",
+				"[c]": {
+					"editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
+				},
+				"[cpp]": {
+					"editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
+				}
+			},
+			"extensions": [
+				"llvm-vs-code-extensions.vscode-clangd",
+				"ms-vscode.cpptools-extension-pack"
+			]
+		}
 	}
 }
