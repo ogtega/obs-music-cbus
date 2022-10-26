@@ -5,7 +5,7 @@
 static void *overplay_create(obs_data_t *settings, obs_source_t *source)
 {
 	struct overplay *widget = bzalloc(sizeof(struct overplay));
-	widget->data = bzalloc(sizeof(struct metadata));
+	widget->meta = bzalloc(sizeof(struct metadata));
 	widget->src = source;
 	const char *text_source_id = "text_ft2_source\0";
 	widget->textSource = obs_source_create_private(
@@ -17,12 +17,14 @@ static void *overplay_create(obs_data_t *settings, obs_source_t *source)
 
 static void start_thread(struct overplay *widget)
 {
-	widget->sub_id = bus_subscribe(widget->bus, widget->data);
+	pthread_mutex_init(&widget->meta->lock, NULL);
+	widget->signal_id = bus_subscribe(widget->bus, widget->meta);
 }
 
 static void stop_thread(struct overplay *widget)
 {
-	bus_unsubscribe(widget->bus, widget->sub_id);
+	bus_unsubscribe(widget->bus, widget->signal_id);
+	pthread_mutex_destroy(&widget->meta->lock);
 }
 
 static void overplay_destroy(void *data)
@@ -31,8 +33,8 @@ static void overplay_destroy(void *data)
 
 	stop_thread(widget);
 
-	bfree(widget->data);
-	widget->data = NULL;
+	bfree(widget->meta);
+	widget->meta = NULL;
 
 	obs_source_remove(widget->textSource);
 	obs_source_release(widget->textSource);
@@ -46,11 +48,14 @@ static void overplay_video_tick(void *data, float seconds)
 	UNUSED_PARAMETER(seconds);
 	struct overplay *widget = data;
 
-	if (!obs_source_showing(widget->src))
+	if (!obs_source_showing(widget->src) || !widget->meta->str)
 		return;
 
 	obs_data_set_string(obs_source_get_settings(widget->textSource), "text",
-			    "N/A");
+			    widget->meta->str);
+
+	obs_source_update(widget->textSource,
+			  obs_source_get_settings(widget->textSource));
 }
 
 static void overplay_render(void *data, gs_effect_t *effect)

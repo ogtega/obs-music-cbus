@@ -5,13 +5,13 @@
 
 struct overplay {
 	obs_source_t *src;
+	GDBusConnection *bus;
+	struct metadata *meta;
+	obs_source_t *textSource;
+	guint signal_id;
+	bool showArt;
 	uint32_t cx;
 	uint32_t cy;
-	obs_source_t *textSource;
-	struct metadata *data;
-	bool showArt;
-	guint sub_id;
-	GDBusConnection *bus;
 };
 
 extern void register_overlay();

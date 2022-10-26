@@ -8,6 +8,8 @@ struct metadata {
 	char *title;
 	char *album;
 	char *artUrl;
+	char *str;
+	pthread_mutex_t lock;
 };
 
 extern GDBusConnection *bus_get();

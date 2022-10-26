@@ -16,7 +16,7 @@ GDBusConnection *bus_get()
 		err_msg = g_dbus_error_encode_gerror(err);
 		blog(LOG_ERROR, "Connection Error (%s)", err_msg);
 		g_error_free(err);
-		free(err_msg);
+		g_free(err_msg);
 	}
 
 	if (NULL == conn) {
@@ -44,7 +44,7 @@ void signal_cb(GDBusConnection *conn, const gchar *sender_name,
 	GVariant *metadict = g_variant_lookup_value(dict, "Metadata",
 						    G_VARIANT_TYPE_VARDICT);
 
-	if (metadict) {
+	if (metadict && !pthread_mutex_lock(&meta->lock)) {
 		char *buf = NULL;
 		gchar *artist = NULL;
 		g_autoptr(GVariantIter) artists;
@@ -52,6 +52,16 @@ void signal_cb(GDBusConnection *conn, const gchar *sender_name,
 		if (meta->artist) {
 			bfree(meta->artist);
 			meta->artist = NULL;
+		}
+
+		if (meta->title) {
+			bfree(meta->title);
+			meta->title = NULL;
+		}
+
+		if (meta->album) {
+			bfree(meta->album);
+			meta->album = NULL;
 		}
 
 		g_variant_lookup(metadict, "xesam:title", "s", &meta->title);
@@ -62,7 +72,7 @@ void signal_cb(GDBusConnection *conn, const gchar *sender_name,
 			if (meta->artist) {
 				buf = bzalloc(sizeof(char) *
 					      (strlen(meta->artist) +
-					       strlen(artist) + 3));
+					       strlen(artist) + 2));
 			} else {
 				buf = bzalloc(sizeof(char) *
 					      (strlen(artist) + 1));
@@ -79,9 +89,19 @@ void signal_cb(GDBusConnection *conn, const gchar *sender_name,
 			meta->artist = buf;
 		}
 
+		g_free(artist);
 		g_variant_iter_free(artists);
 
+		if (meta->str)
+			bfree(meta->str);
+
+		meta->str = bzalloc(sizeof(char) * (strlen(meta->artist) +
+						    strlen(meta->title) + 3));
+
+		sprintf(meta->str, "%s - %s", meta->artist, meta->title);
+
 		blog(LOG_INFO, "%s - %s", meta->artist, meta->title);
+		pthread_mutex_unlock(&meta->lock);
 	}
 
 	g_variant_unref(params);
