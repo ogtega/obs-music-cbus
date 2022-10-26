@@ -1,6 +1,7 @@
 #include "dbus.h"
 #include <unistd.h>
 #include <util/base.h>
+#include <util/bmem.h>
 #include <util/c99defs.h>
 
 GDBusConnection *bus_get()
@@ -36,19 +37,54 @@ void signal_cb(GDBusConnection *conn, const gchar *sender_name,
 	UNUSED_PARAMETER(signal_name);
 
 	struct metadata *meta = data;
-
-	gchar *source = NULL;
 	g_autoptr(GVariant) dict = NULL;
-	g_autoptr(GVariantIter) arr = NULL;
 
-	g_variant_get(params, "(s@a{sv}as)", &source, &dict, &arr);
+	g_variant_get(params, "(s@a{sv}as)", NULL, &dict, NULL);
 
 	GVariant *metadict = g_variant_lookup_value(dict, "Metadata",
 						    G_VARIANT_TYPE_VARDICT);
+
 	if (metadict) {
+		char *buf = NULL;
+		gchar *artist = NULL;
+		g_autoptr(GVariantIter) artists;
+
+		if (meta->artist) {
+			bfree(meta->artist);
+			meta->artist = NULL;
+		}
+
 		g_variant_lookup(metadict, "xesam:title", "s", &meta->title);
-		blog(LOG_INFO, "%s", meta->title);
+		g_variant_lookup(metadict, "xesam:album", "s", &meta->album);
+		g_variant_lookup(metadict, "xesam:artist", "as", &artists);
+
+		while (g_variant_iter_loop(artists, "s", &artist)) {
+			if (meta->artist) {
+				buf = bzalloc(sizeof(char) *
+					      (strlen(meta->artist) +
+					       strlen(artist) + 3));
+			} else {
+				buf = bzalloc(sizeof(char) *
+					      (strlen(artist) + 1));
+			}
+
+			if (meta->artist) {
+				strcat(buf, meta->artist);
+				bfree(meta->artist);
+				strcat(buf, ", ");
+			}
+
+			strcat(buf, artist);
+
+			meta->artist = buf;
+		}
+
+		g_variant_iter_free(artists);
+
+		blog(LOG_INFO, "%s - %s", meta->artist, meta->title);
 	}
+
+	g_variant_unref(params);
 }
 
 guint bus_subscribe(GDBusConnection *conn, struct metadata *data)
