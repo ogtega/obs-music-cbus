@@ -45,62 +45,36 @@ void signal_cb(GDBusConnection *conn, const gchar *sender_name,
 						    G_VARIANT_TYPE_VARDICT);
 
 	if (metadict && !pthread_mutex_lock(&meta->lock)) {
-		char *buf = NULL;
-		gchar *artist = NULL;
-		g_autoptr(GVariantIter) artists;
-
-		if (meta->artist) {
-			bfree(meta->artist);
-			meta->artist = NULL;
-		}
-
-		if (meta->title) {
-			bfree(meta->title);
-			meta->title = NULL;
-		}
-
-		if (meta->album) {
-			bfree(meta->album);
-			meta->album = NULL;
-		}
+		gchar **artists = NULL;
 
 		g_variant_lookup(metadict, "xesam:title", "s", &meta->title);
 		g_variant_lookup(metadict, "xesam:album", "s", &meta->album);
-		g_variant_lookup(metadict, "xesam:artist", "as", &artists);
+		g_variant_lookup(metadict, "xesam:artist", "^a&s", &artists);
 
-		while (g_variant_iter_loop(artists, "s", &artist)) {
-			if (meta->artist) {
-				buf = bzalloc(sizeof(char) *
-					      (strlen(meta->artist) +
-					       strlen(artist) + 2));
-			} else {
-				buf = bzalloc(sizeof(char) *
-					      (strlen(artist) + 1));
-			}
+		if (artists)
+			meta->by = g_strjoinv(", ", artists);
 
-			if (meta->artist) {
-				strcat(buf, meta->artist);
-				bfree(meta->artist);
-				strcat(buf, ", ");
-			}
+		bfree(meta->str);
 
-			strcat(buf, artist);
+		long len = 0;
 
-			meta->artist = buf;
+		if (!artists || !meta->title) {
+			len = (strlen(meta->by) + strlen(meta->title) + 2);
+
+			meta->str = bzalloc(sizeof(char) * len);
+			g_snprintf(meta->str, len, "%s%s ", meta->by,
+				   meta->title);
+		} else {
+			len = (strlen(meta->by) + strlen(meta->title) + 5);
+
+			meta->str = bzalloc(sizeof(char) * len);
+
+			if (len - 5 > 0)
+				g_snprintf(meta->str, len, "%s - %s ", meta->by,
+					   meta->title);
 		}
 
-		g_free(artist);
-		g_variant_iter_free(artists);
-
-		if (meta->str)
-			bfree(meta->str);
-
-		meta->str = bzalloc(sizeof(char) * (strlen(meta->artist) +
-						    strlen(meta->title) + 3));
-
-		sprintf(meta->str, "%s - %s", meta->artist, meta->title);
-
-		blog(LOG_INFO, "%s - %s", meta->artist, meta->title);
+		blog(LOG_INFO, "%s - %s", meta->by, meta->title);
 		pthread_mutex_unlock(&meta->lock);
 	}
 

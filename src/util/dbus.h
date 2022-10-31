@@ -4,7 +4,7 @@
 #include <gio/gio.h>
 
 struct metadata {
-	char *artist;
+	char *by;
 	char *title;
 	char *album;
 	char *artUrl;
