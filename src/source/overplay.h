@@ -3,15 +3,13 @@
 #include <dbus/dbus.h>
 #include <obs-module.h>
 
-struct overplay {
+struct overplay_data {
 	obs_source_t *src;
-	GDBusConnection *bus;
+	GDBusConnection *conn;
 	struct metadata *meta;
-	obs_source_t *textSource;
+	obs_source_t *text_src;
 	guint signal_id;
 	bool showArt;
-	uint32_t cx;
-	uint32_t cy;
 };
 
 extern void register_overlay();

@@ -91,5 +91,16 @@ guint bus_subscribe(GDBusConnection *conn, struct metadata *data)
 
 void bus_unsubscribe(GDBusConnection *conn, guint id)
 {
+	GError *err = NULL;
+	char *err_msg = NULL;
+
 	g_dbus_connection_signal_unsubscribe(conn, id);
+	g_dbus_connection_close_sync(conn, NULL, &err);
+
+	if (err) {
+		err_msg = g_dbus_error_encode_gerror(err);
+		blog(LOG_ERROR, "Connection Error (%s)", err_msg);
+		g_error_free(err);
+		g_free(err_msg);
+	}
 }
